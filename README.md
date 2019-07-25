@@ -25,7 +25,8 @@ type operation =
   | Mirror
   | MetaInc of int
   | StoreSave
-  | StoreUse```
+  | StoreUse
+```
 
 Portals are either `None` if not present or `Some (portal [portal entry] [portal exit])` where `entry < exit` and we start counting from the right (and from 0).
 
@@ -34,19 +35,22 @@ Portals are either `None` if not present or `Some (portal [portal entry] [portal
 #### Level 134
 ```ocaml
 > solution 0 34 3 [Append 2; Append 3; MetaInc 1] None;;
-[+]1 ➔ 3 ➔ 4```
+[+]1 ➔ 3 ➔ 4
+```
 
 #### Level 155
 ```ocaml
 > solution 9 3001 9 [Replace("39", "93"); StoreSave; StoreUse; Div 3; Replace("31", "00")] None;;
-store (s) ➔ /3 ➔ store (u) ➔ store (s) ➔ store (u) ➔ 39=>93 ➔ 39=>93 ➔ /3 ➔ 31=>00```
+store (s) ➔ /3 ➔ store (u) ➔ store (s) ➔ store (u) ➔ 39=>93 ➔ 39=>93 ➔ /3 ➔ 31=>00
+```
 
 (store (s) is long press and store (u) is single press)
 
 #### Level 168
 ```ocaml
 > solution 26 99 6 [Sum; Inv10; Append 2] None;;
-2 ➔ sum ➔ Inv10 ➔ 2 ➔ sum ➔ Inv10```
+2 ➔ sum ➔ Inv10 ➔ 2 ➔ sum ➔ Inv10
+```
 
 #### Level 185
 ```ocaml
