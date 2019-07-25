@@ -5,7 +5,7 @@ type operation =
     Add of int | Sub of int | Mul of int | Div of int | Square | Cube
   | Del | MulNeg | Append of int | Replace of string * string | Shift of int
   | Reverse | Sum | Inv10 | Mirror | MetaInc of int | StoreSave | StoreUse
-type state = int * int option * operation list (* TODO add int option for store *)
+type state = int * int option * operation list
 
 let rec pow a = function
   | 0 -> 1
@@ -14,7 +14,7 @@ let rec pow a = function
     let b = pow a (n / 2) in
     b * b * (if n mod 2 = 0 then 1 else a)
 
-exception StopSearch
+exception StopSearch (* raised when a search branch is impossible/useless *)
 
 let disp_op = function
   | Add n -> "+" ^ string_of_int n
@@ -36,7 +36,7 @@ let disp_op = function
   | StoreSave -> "store (s)"
   | StoreUse -> "store (u)"
 
-(* Button operations *)
+(* -- Button operations *)
 let apply_neg x op = -(op (-x))
 
 let rec del_last x =
@@ -68,14 +68,11 @@ let rec inv10 x =
 (* very stupid & not efficient *)
 let rec num_replace x a b =
   let rec str_replace left right pat rep =
-    (* TODO open String here *)
     let pat_l = String.length pat in
     let r_l = String.length right in
     if r_l < pat_l then left ^ right
     else if pat = String.sub right 0 pat_l
-    (* match *)
     then str_replace (left ^ rep) (String.sub right pat_l (r_l - pat_l)) pat rep
-    (* no match *)
     else str_replace (left ^ String.sub right 0 1) (String.sub right 1 (r_l - 1)) pat rep in
   if x < 0 then apply_neg x (fun x -> num_replace x a b) else  (*suboptimalbutwhatever*)
   int_of_string (str_replace "" (string_of_int x) a b)
@@ -136,9 +133,8 @@ let inc_buttons i = List.map (function
     | Append a -> Append (a + i)
     | op -> op)
 
-(* [in_ind] is where the number comes in (0 for the right position on screen)
-   [out_ind] is it comes out (so out_ind > in_ind) *)
-let rec portal out_ind in_ind x =
+(* out_ind > in_ind *)
+let rec portal in_ind out_ind x =
   if x |> string_of_int |> String.length <= out_ind then x
   else
     let rec apply_portal n a b = match (n, b) with
@@ -147,8 +143,7 @@ let rec portal out_ind in_ind x =
       | (n, []) -> raise (Failure "This should never happen") in
     let (digit, root) =
       apply_portal ((String.length (string_of_int x)) - out_ind) [] (num_to_digits x) in
-    portal out_ind in_ind ((digits_to_num root) + (digit * (pow 10 in_ind)))
-
+    portal in_ind out_ind ((digits_to_num root) + (digit * (pow 10 in_ind)))
 
 let solve start goal moves buttons portal =
   let rec solve_aux (curr_num, store_state, op_applied) moves_left current_buttons =
@@ -175,13 +170,14 @@ let solve start goal moves buttons portal =
       List.fold_left merge [] (List.map map_func current_buttons) in
   solve_aux (start, None, []) moves buttons
 
-let pretty_result l = (List.map disp_op l)
-                      |> String.concat " ➔ "
-                      |> print_endline
+let pretty_result l = (List.map disp_op l) |> String.concat " ➔ "
+let solution a b c d e = (solve a b c d e) |> pretty_result |> print_endline
 
+(* let () = s 0 9 9 [Add 1; Div 2; Div 3; Replace("8","0")] None *)
 (* let () = pretty_result (solve 9 3001 9 [Replace("39", "93"); StoreSave; StoreUse; Div 3; Replace("31", "00")] None) *)
-
 (* solve 0 2 2 [Add 3; Sub 1];; *)
-(*$T solve
-  solve 50 9 4 [Del; Div 5; Mul 3] = [Mul 3; Mul 3; Div 5; Del]
+
+(* --- Tests (TODO) *)
+(*$= solve & ~printer:pretty_result
+  (solve 0 45 5 [Mul 9; Append 4; Mul 3; Replace("3","5"); Sum] None) [Append 4; Mul 3; Sum; Replace ("3", "5"); Mul 9]  (* Level 91 *)
 *)

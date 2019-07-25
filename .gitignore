@@ -1,0 +1,7 @@
+*build/
+*.mli
+*.o
+*.cmx
+*.native
+*.log
+CalcSolverTests.ml
