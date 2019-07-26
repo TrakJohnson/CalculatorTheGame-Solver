@@ -148,8 +148,8 @@ let rec portal in_ind out_ind x =
 let solve start goal moves buttons portal =
   let rec solve_aux (curr_num, store_state, op_applied) moves_left current_buttons =
     if (abs curr_num) |> string_of_int |> String.length > 6 then (raise StopSearch)
-    else if moves_left = 0 then
-      if curr_num = goal then op_applied else []
+    else if curr_num = goal then op_applied (* reach early *)
+    else if moves_left = 0 then []
     else
       let portal_func = match portal with
         | None -> (fun x -> x)
@@ -163,7 +163,7 @@ let solve start goal moves buttons portal =
                     (portal_func (apply_op (curr_num, store_state, op_applied) button))
                     (moves_left - 1) current_buttons
         with StopSearch -> [] in
-      let merge a b = (* keep the smallest solution *)
+      let merge a b =
         if a <> [] && b <> [] then
           if List.length a < List.length b then a else b
         else a @ b in
