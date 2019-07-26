@@ -1,6 +1,6 @@
 # Solver for "Calculator - The Game"
 
-A fun little game that deserves a solver. 
+A [fun little game](https://www.simplemachine.co/game/calculator-the-game/) that deserves a solver. 
 
 Call the `solution` function with: 
     
