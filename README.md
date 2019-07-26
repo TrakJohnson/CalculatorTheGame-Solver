@@ -2,7 +2,9 @@
 
 A fun little game that deserves a solver. 
 
-Call the `solution` function with: `solution [starting num] [goal num] [number of moves] [list of buttons] [portal]`
+Call the `solution` function with: 
+    
+    solution [starting num] [goal num] [number of moves] [list of buttons] [portal]
 
 Operations have the following signature:
 
@@ -57,6 +59,14 @@ store (s) ➔ /3 ➔ store (u) ➔ store (s) ➔ store (u) ➔ 39=>93 ➔ 39=>93
 # solution 525 150 5 [Add 1; Append 6; Append 7; Div 2] (Some (portal 0 3));;
 7 ➔ 6 ➔ /2 ➔ 6 ➔ +1
 ```
+
+#### Level 188
+```ocaml
+# solution 25 822 6 [Mirror; Append 5; StoreUse; StoreSave; Del] (Some (portal 1 3));;
+5 ➔ mirror ➔ store (s) ➔ store (u)
+```
+
+(solution in 4 moves instead of the 6 expected)
 
 #### Level 199
 ```ocaml

@@ -146,10 +146,11 @@ let rec portal in_ind out_ind x =
     portal in_ind out_ind ((digits_to_num root) + (digit * (pow 10 in_ind)))
 
 let solve start goal moves buttons portal =
-  let rec solve_aux (curr_num, store_state, op_applied) moves_left current_buttons =
+  let rec solve_aux (curr_num, store_state, op_applied) moves_left current_buttons history =
     if (abs curr_num) |> string_of_int |> String.length > 6 then (raise StopSearch)
     else if curr_num = goal then op_applied (* reach early *)
     else if moves_left = 0 then []
+    else if List.mem (curr_num, store_state) history then raise StopSearch
     else
       let portal_func = match portal with
         | None -> (fun x -> x)
@@ -158,26 +159,20 @@ let solve start goal moves buttons portal =
           match button with
           | MetaInc n -> solve_aux
                            (curr_num, store_state, op_applied @ [button])
-                           (moves_left - 1) (inc_buttons n current_buttons)
+                           (moves_left - 1) (inc_buttons n current_buttons) ((curr_num, store_state)::history)
           | op -> solve_aux
                     (portal_func (apply_op (curr_num, store_state, op_applied) button))
-                    (moves_left - 1) current_buttons
+                    (moves_left - 1) current_buttons ((curr_num, store_state)::history)
         with StopSearch -> [] in
       let merge a b =
         if a <> [] && b <> [] then
           if List.length a < List.length b then a else b
         else a @ b in
       List.fold_left merge [] (List.map map_func current_buttons) in
-  solve_aux (start, None, []) moves buttons
+  solve_aux (start, None, []) moves buttons []
 
 let pretty_result l = (List.map disp_op l) |> String.concat " ➔ "
 let solution a b c d e = (solve a b c d e) |> pretty_result |> print_endline
 
-(* let () = s 0 9 9 [Add 1; Div 2; Div 3; Replace("8","0")] None *)
-(* let () = pretty_result (solve 9 3001 9 [Replace("39", "93"); StoreSave; StoreUse; Div 3; Replace("31", "00")] None) *)
-(* solve 0 2 2 [Add 3; Sub 1];; *)
+(* let () = solution 9 3001 9 [Replace("39", "93"); StoreSave; StoreUse; Div 3; Replace("31", "00")] None *)
 
-(* --- Tests (TODO) *)
-(*$= solve & ~printer:pretty_result
-  (solve 0 45 5 [Mul 9; Append 4; Mul 3; Replace("3","5"); Sum] None) [Append 4; Mul 3; Sum; Replace ("3", "5"); Mul 9]  (* Level 91 *)
-*)
