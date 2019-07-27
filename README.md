@@ -73,3 +73,6 @@ store (s) ➔ /3 ➔ store (u) ➔ store (s) ➔ store (u) ➔ 39=>93 ➔ 39=>93
 # solution 3002 3507 6 [Append 7; Replace("3","5"); Inv10; Shift 1] (Some (portal 0 4));;
 7 ➔ 3=>5 ➔ 7 ➔ shift> ➔ Inv10 ➔ 7
 ```
+## Tests
+
+Need `alcotest`, then `ocamlbuild -pkg alcotest calc_solver_tests.native && ./calc_solver_tests.native`
