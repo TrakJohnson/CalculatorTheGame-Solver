@@ -145,12 +145,13 @@ let rec portal in_ind out_ind x =
       apply_portal ((String.length (string_of_int x)) - out_ind) [] (num_to_digits x) in
     portal in_ind out_ind ((digits_to_num root) + (digit * (pow 10 in_ind)))
 
+
 let solve start goal moves buttons portal =
   let rec solve_aux (curr_num, store_state, op_applied) moves_left current_buttons history =
     if (abs curr_num) |> string_of_int |> String.length > 6 then (raise StopSearch)
     else if curr_num = goal then op_applied (* reach early *)
     else if moves_left = 0 then []
-    else if List.mem (curr_num, store_state) history then raise StopSearch
+    else if List.mem (curr_num, store_state, current_buttons) history then raise StopSearch
     else
       let portal_func = match portal with
         | None -> (fun x -> x)
@@ -159,10 +160,10 @@ let solve start goal moves buttons portal =
           match button with
           | MetaInc n -> solve_aux
                            (curr_num, store_state, op_applied @ [button])
-                           (moves_left - 1) (inc_buttons n current_buttons) ((curr_num, store_state)::history)
+                           (moves_left - 1) (inc_buttons n current_buttons) ((curr_num, store_state, current_buttons)::history)
           | op -> solve_aux
                     (portal_func (apply_op (curr_num, store_state, op_applied) button))
-                    (moves_left - 1) current_buttons ((curr_num, store_state)::history)
+                    (moves_left - 1) current_buttons ((curr_num, store_state, current_buttons)::history)
         with StopSearch -> [] in
       let merge a b =
         if a <> [] && b <> [] then
@@ -173,6 +174,4 @@ let solve start goal moves buttons portal =
 
 let pretty_result l = (List.map disp_op l) |> String.concat " ➔ "
 let solution a b c d e = (solve a b c d e) |> pretty_result |> print_endline
-
-(* let () = solution 9 3001 9 [Replace("39", "93"); StoreSave; StoreUse; Div 3; Replace("31", "00")] None *)
 
