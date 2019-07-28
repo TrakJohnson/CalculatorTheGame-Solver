@@ -75,4 +75,4 @@ store (s) ➔ /3 ➔ store (u) ➔ store (s) ➔ store (u) ➔ 39=>93 ➔ 39=>93
 ```
 ## Tests
 
-Need `alcotest`, then `ocamlbuild -pkg alcotest calc_solver_tests.native && ./calc_solver_tests.native`
+Need `alcotest`, then `ocamlbuild -pkg alcotest -pkg str calc_solver_tests.native && ./calc_solver_tests.native`

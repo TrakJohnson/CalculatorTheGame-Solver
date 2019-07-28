@@ -65,17 +65,10 @@ let rec inv10 x =
        |> List.map (fun x -> if x = 0 then 0 else 10 - x)
        |> digits_to_num
 
-(* very stupid & not efficient *)
 let rec num_replace x a b =
-  let rec str_replace left right pat rep =
-    let pat_l = String.length pat in
-    let r_l = String.length right in
-    if r_l < pat_l then left ^ right
-    else if pat = String.sub right 0 pat_l
-    then str_replace (left ^ rep) (String.sub right pat_l (r_l - pat_l)) pat rep
-    else str_replace (left ^ String.sub right 0 1) (String.sub right 1 (r_l - 1)) pat rep in
-  if x < 0 then apply_neg x (fun x -> num_replace x a b) else  (*suboptimalbutwhatever*)
-  int_of_string (str_replace "" (string_of_int x) a b)
+  if x < 0 then apply_neg x (fun x -> num_replace x a b)
+  else Str.global_replace (Str.regexp a) b (string_of_int x)
+       |> int_of_string
 
 let rec reverse x =
   if x < 0 then apply_neg x reverse
