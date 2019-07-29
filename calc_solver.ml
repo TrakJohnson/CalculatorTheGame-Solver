@@ -1,6 +1,5 @@
-(* Calculator The Game - Solver *)
+(* -- Calculator The Game - Solver *)
 
-type num_repr = bool * string (* true for positive, false for negative *)
 type operation =
     Add of int | Sub of int | Mul of int | Div of int | Square | Cube
   | Del | MulNeg | Append of int | Replace of string * string | Shift of int
@@ -37,13 +36,9 @@ let disp_op = function
   | StoreUse -> "store (u)"
 
 (* -- Button operations *)
-let apply_neg x op = -(op (-x))
 
-let rec del_last x =
-  let str_x = string_of_int x in
-  if x < 0 then apply_neg x del_last
-  else if x < 10 then 0
-  else int_of_string (String.sub str_x 0 (String.length str_x - 1))
+(* wrapper for operations whose implementation doesn't support negatives *)
+let neg_wrap op x = if x < 0 then -(op (-x)) else op x
 
 let rec num_to_digits x =
   let rec aux x =
@@ -53,42 +48,36 @@ let rec num_to_digits x =
 
 let digits_to_num l = List.fold_left (fun a b -> 10 * a + b ) 0 l
 
+(* shortcut for functions that require digit lists as input *)
+let dig_wrap op x = x |> num_to_digits |> op |> digits_to_num
+
+let rec del_last x =
+  let str_x = string_of_int x in
+  if x < 10 then 0
+  else int_of_string (String.sub str_x 0 (String.length str_x - 1))
+
 let append_num x a = int_of_string (string_of_int x ^ string_of_int a)
 
-let rec sum x =
-  if x < 0 then apply_neg x sum
-  else x |> num_to_digits |> List.fold_left (+) 0
+let sum x = x |> num_to_digits |> List.fold_left (+) 0
 
-let rec inv10 x =
-  if x < 0 then apply_neg x inv10
-  else x |> num_to_digits
-       |> List.map (fun x -> if x = 0 then 0 else 10 - x)
-       |> digits_to_num
+let inv10 x = dig_wrap (List.map (fun x -> if x = 0 then 0 else 10 - x)) x
 
-let rec num_replace x a b =
-  if x < 0 then apply_neg x (fun x -> num_replace x a b)
-  else Str.global_replace (Str.regexp a) b (string_of_int x)
-       |> int_of_string
+let num_replace x a b = Str.global_replace (Str.regexp a) b (string_of_int x)
+                            |> int_of_string
 
-let rec reverse x =
-  if x < 0 then apply_neg x reverse
-  else x |> num_to_digits |> List.rev |> digits_to_num
+let rec reverse = dig_wrap List.rev
 
-let rec shift x direction =
-  if x < 0 then apply_neg x (fun x -> shift x direction)
-  else
-    let rec shift_arr direction' xs =
+let shift direction x =
+  let rec shift_arr direction' xs =
       match (direction', xs) with
       | (1, ds) -> List.rev (shift_arr (-1) (List.rev ds))
       | (-1, d::ds) -> ds @ [d]
       | (_, _) -> raise (Invalid_argument "[direction] must be -1 (left) or 1 (right)") in
-    x |> num_to_digits |> shift_arr direction |> digits_to_num
+    dig_wrap (shift_arr direction) x
 
-let rec mirror x =
-  if x < 0 then apply_neg x mirror
-  else digits_to_num (num_to_digits x @ (List.rev (num_to_digits x)))
+let mirror = dig_wrap (fun a -> a @ (List.rev a))
 
-(* Applying operations and solving *)
+(* -- Applying operations and solving *)
 
 let apply_op (curr_num, store_state, op_applied) op =
   let aux a = function
@@ -99,14 +88,14 @@ let apply_op (curr_num, store_state, op_applied) op =
     | Square -> a * a
     | Cube -> a * a * a
     | MulNeg -> -a
-    | Del   -> del_last a
+    | Del   -> neg_wrap del_last a
     | Append b -> append_num a b
     | Replace (b, c) -> num_replace a b c
-    | Shift d -> shift a d
-    | Reverse -> reverse a
-    | Sum -> sum a
-    | Inv10 -> inv10 a
-    | Mirror -> mirror a
+    | Shift d -> neg_wrap (shift d) a
+    | Reverse -> neg_wrap reverse a
+    | Sum -> neg_wrap sum a
+    | Inv10 -> neg_wrap inv10 a
+    | Mirror -> neg_wrap mirror a
     | MetaInc n -> a (* stateful ops are handled in solve *)
     | StoreSave -> a
     | StoreUse -> match store_state with
